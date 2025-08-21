@@ -1,7 +1,6 @@
-import datetime
 from typing import override
 from django.db import models
-
+from django.utils import timezone
 
 # Create your models here.
 
@@ -62,6 +61,9 @@ class ScheduledExercise(models.Model):
     def __str__(self) -> str:
         return f"Exercise {self.plan} at {self.datetime}"
 
+    def has_expired(self) -> bool:
+        return self.datetime < timezone.now()
+
 
 # TODO: Considerations for later: Addition of Completed bool field
 class Record(models.Model):
@@ -69,13 +71,38 @@ class Record(models.Model):
     Class representing Past exercise plans.
 
     Attributes:
-        exercise_plan: Stored ForeignKey to the exercise_plan that was done
-        text: User commentary on their exercise
+        exercise_plan: Stored ForeignKey to the scheduled_exercise that was done
+        missed: boolean for tracking if exercise was missed, initialized to true
+        text: User commentary on their exercise, initialized to the entry string
+    Methods:
+        make_record(): takes an exercise_plan, and makes a record entry
+        edit_missed(): inverts missed
+        edit_text(): replaces text with input
+
     """
 
-    exercise_plan = models.ForeignKey(to=ExercisePlan, on_delete=models.PROTECT)
+    scheduled_plan = models.ForeignKey(to=ScheduledExercise, on_delete=models.PROTECT)
     text = models.TextField()
+    missed = models.BooleanField()
 
     @override
     def __str__(self) -> str:
-        return f"Record for {self.exercise_plan} with text {self.text} "
+        return f"Record for {self.scheduled_plan} with text {self.text} that was missed={self.missed}"
+
+
+class UserAccount(models.Model):
+    """
+    Class for handling the Database potion of userdata.
+
+    Attributes:
+        saved_plans: exercise plans stored by the user
+        scheduled_plans: Planned exercises, that will expire at the time they are scheduled
+        record: Records of the user's past exercises
+    Methods:
+        make_plan(): Takes in a list of Exercise entries and assembles an ExercisePlan in saved_plans
+        remove_plan(): removes entry from saved_plans, if it exists
+        schedule_plan(): takes a datetime and a ExercisePlan and creates a ScheduledExercise
+        unschedule_plan(): removes entry from scheduled_plans, if it exists
+        edit_record_text(): Edits the text field on a record entry
+        edit_record_missed(): Inverts the status of the missed field on a record entry
+    """
