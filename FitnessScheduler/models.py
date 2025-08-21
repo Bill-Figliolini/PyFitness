@@ -27,6 +27,7 @@ class Exercise(models.Model):
     category = models.IntegerField(choices=ExerciseCategory)
 
 
+# TODO: Current implementation of Record implies that there should be immutable. Needs more thought.
 class ExercisePlan(models.Model):
     """
     Class that represents the list of exercises that the user wants to perform.
@@ -38,6 +39,7 @@ class ExercisePlan(models.Model):
     exercises = models.ManyToManyField(to=Exercise)
 
 
+# TODO: active/inprogress field?
 class ScheduledExercise(models.Model):
     """
     Class that represents the scheduling of a future Exercise plan
@@ -51,6 +53,7 @@ class ScheduledExercise(models.Model):
     plan = models.ForeignKey(to=ExercisePlan, on_delete=models.SET_NULL)
 
 
+# TODO: Considerations for later: Addition of Completed bool field
 class Record(models.Model):
     """
     Class representing Past exercise plans.
