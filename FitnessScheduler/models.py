@@ -1,3 +1,5 @@
+import datetime
+from typing import override
 from django.db import models
 
 
@@ -26,6 +28,10 @@ class Exercise(models.Model):
     name = models.CharField(max_length=100)
     category = models.IntegerField(choices=ExerciseCategory)
 
+    @override
+    def __str__(self) -> str:
+        return self.name
+
 
 # TODO: Current implementation of Record implies that there should be immutable. Needs more thought.
 class ExercisePlan(models.Model):
@@ -52,6 +58,10 @@ class ScheduledExercise(models.Model):
     datetime = models.DateTimeField()
     plan = models.ForeignKey(to=ExercisePlan, on_delete=models.SET_NULL)
 
+    @override
+    def __str__(self) -> str:
+        return f"Exercise {self.plan} at {self.datetime}"
+
 
 # TODO: Considerations for later: Addition of Completed bool field
 class Record(models.Model):
@@ -60,10 +70,12 @@ class Record(models.Model):
 
     Attributes:
         exercise_plan: Stored ForeignKey to the exercise_plan that was done
-        datetime: When the Exercise was performed
         text: User commentary on their exercise
     """
 
     exercise_plan = models.ForeignKey(to=ExercisePlan, on_delete=models.PROTECT)
-    datetime = models.DateTimeField()
     text = models.TextField()
+
+    @override
+    def __str__(self) -> str:
+        return f"Record for {self.exercise_plan} with text {self.text} "
