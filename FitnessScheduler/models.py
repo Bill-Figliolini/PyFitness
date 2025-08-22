@@ -42,6 +42,17 @@ class Exercise(models.Model):
         return self.name
 
 
+class OrderedExercises(models.Model):
+    """
+    Class of enumerated exercises that ExercisePlan is built upon
+    """
+
+    exercise: ForeignKey[Exercise] = models.ForeignKey(
+        to=Exercise, on_delete=models.PROTECT
+    )
+    order: models.PositiveIntegerField[int] = models.PositiveIntegerField()
+
+
 # TODO: Current implementation of Record implies that there should be immutable. Needs more thought.
 class ExercisePlan(models.Model):
     """
@@ -51,10 +62,12 @@ class ExercisePlan(models.Model):
         exercises: Many-to-Many relation over Exercise
     """
 
-    exercises = models.ManyToManyField(to=Exercise)
+    name: TextField[str] = models.TextField()
+    ordered_exercises: ManyToManyField[ExercisePlan, OrderedExercises] = (
+        models.ManyToManyField(to=OrderedExercises)
+    )
 
 
-# TODO: active/inprogress field?
 class ScheduledExercise(models.Model):
     """
     Class that represents the scheduling of a future Exercise plan
