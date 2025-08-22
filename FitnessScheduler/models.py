@@ -1,8 +1,16 @@
+from datetime import datetime
 from typing import override
 from django.db import models
-from django.db.models.fields import BooleanField, TextField
-from django.db.models.fields.related import ForeignKey
+from django.db.models.fields import (
+    BooleanField,
+    CharField,
+    DateTimeField,
+    IntegerField,
+    TextField,
+)
+from django.db.models.fields.related import ForeignKey, ManyToManyField, OneToOneField
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 # Create your models here.
 
@@ -26,8 +34,8 @@ class Exercise(models.Model):
         AEROBIC = 6
         FLEXIBILITY = 7
 
-    name = models.CharField(max_length=100)
-    category = models.IntegerField(choices=ExerciseCategory)
+    name: CharField[str] = models.CharField(max_length=100)
+    category: IntegerField[int] = models.IntegerField(choices=ExerciseCategory)
 
     @override
     def __str__(self) -> str:
@@ -54,17 +62,21 @@ class ScheduledExercise(models.Model):
     Attributes:
         datetime: When the User wants to schedule the exercise for
         plan: ForeignKey to an ExercisePlan
+        completed: has been marked completed
     """
 
-    datetime = models.DateTimeField()
-    plan = models.ForeignKey(to=ExercisePlan, on_delete=models.SET_NULL)
+    scheduledtime: DateTimeField[datetime] = models.DateTimeField()
+    plan: ForeignKey[ExercisePlan] = models.ForeignKey(
+        to=ExercisePlan, on_delete=models.SET_NULL
+    )
+    completed: BooleanField[bool] = models.BooleanField()
 
     @override
     def __str__(self) -> str:
-        return f"Exercise {self.plan} at {self.datetime}"
+        return f"Exercise {self.plan} at {self.scheduledtime}"
 
     def has_expired(self) -> bool:
-        return self.datetime < timezone.now()
+        return self.scheduledtime < timezone.now()
 
 
 # TODO: Considerations for later: Addition of Completed bool field
@@ -80,14 +92,13 @@ class Record(models.Model):
         make_record(): takes an exercise_plan, and makes a record entry
         edit_missed(): inverts missed
         edit_text(): replaces text with input
-
     """
 
     scheduled_plan: ForeignKey[ScheduledExercise] = models.ForeignKey(
         to=ScheduledExercise, on_delete=models.PROTECT
     )
     text: TextField[str] = models.TextField()
-    missed: BooleanField = models.BooleanField()
+    missed: BooleanField[bool] = models.BooleanField()
 
     @override
     def __str__(self) -> str:
@@ -109,4 +120,20 @@ class UserAccount(models.Model):
         unschedule_plan(): removes entry from scheduled_plans, if it exists
         edit_record_text(): Edits the text field on a record entry
         edit_record_missed(): Inverts the status of the missed field on a record entry
+        update_scheudules(): sends expired scheduled plans to records
     """
+
+    account_binding: OneToOneField[User] = models.OneToOneField(
+        User, on_delete=models.CASCADE
+    )
+    saved_plans: ManyToManyField[User, ExercisePlan] = models.ManyToManyField(
+        ExercisePlan
+    )
+    scheduled_plans: ManyToManyField[User, ScheduledExercise] = models.ManyToManyField(
+        ScheduledExercise
+    )
+    records: ManyToManyField[User, Record] = models.ManyToManyField(Record)
+
+    @override
+    def __str__(self) -> str:
+        return f"User {self.account_binding}"
