@@ -1,5 +1,7 @@
 from typing import override
 from django.db import models
+from django.db.models.fields import BooleanField, TextField
+from django.db.models.fields.related import ForeignKey
 from django.utils import timezone
 
 # Create your models here.
@@ -81,9 +83,11 @@ class Record(models.Model):
 
     """
 
-    scheduled_plan = models.ForeignKey(to=ScheduledExercise, on_delete=models.PROTECT)
-    text = models.TextField()
-    missed = models.BooleanField()
+    scheduled_plan: ForeignKey[ScheduledExercise] = models.ForeignKey(
+        to=ScheduledExercise, on_delete=models.PROTECT
+    )
+    text: TextField[str] = models.TextField()
+    missed: BooleanField = models.BooleanField()
 
     @override
     def __str__(self) -> str:
