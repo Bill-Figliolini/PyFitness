@@ -34,8 +34,8 @@ class Exercise(models.Model):
         AEROBIC = 6
         FLEXIBILITY = 7
 
-    name: CharField[str] = models.CharField(max_length=100)
-    category: IntegerField[int] = models.IntegerField(choices=ExerciseCategory)
+    name: CharField = models.CharField(max_length=100)
+    category: IntegerField = models.IntegerField(choices=ExerciseCategory)
 
     @override
     def __str__(self) -> str:
@@ -50,7 +50,7 @@ class OrderedExercises(models.Model):
     exercise: ForeignKey[Exercise] = models.ForeignKey(
         to=Exercise, on_delete=models.PROTECT
     )
-    order: models.PositiveIntegerField[int] = models.PositiveIntegerField()
+    order: models.PositiveIntegerField = models.PositiveIntegerField()
 
 
 # TODO: Current implementation of Record implies that there should be immutable. Needs more thought.
@@ -62,10 +62,8 @@ class ExercisePlan(models.Model):
         exercises: Many-to-Many relation over Exercise
     """
 
-    name: TextField[str] = models.TextField()
-    ordered_exercises: ManyToManyField[ExercisePlan, OrderedExercises] = (
-        models.ManyToManyField(to=OrderedExercises)
-    )
+    name: TextField = models.TextField()
+    ordered_exercises: ManyToManyField = models.ManyToManyField(to=OrderedExercises)
 
 
 class ScheduledExercise(models.Model):
@@ -78,11 +76,11 @@ class ScheduledExercise(models.Model):
         completed: has been marked completed
     """
 
-    scheduledtime: DateTimeField[datetime] = models.DateTimeField()
+    scheduledtime: DateTimeField = models.DateTimeField()
     plan: ForeignKey[ExercisePlan] = models.ForeignKey(
-        to=ExercisePlan, on_delete=models.SET_NULL
+        to=ExercisePlan, on_delete=models.PROTECT
     )
-    completed: BooleanField[bool] = models.BooleanField()
+    completed: BooleanField = models.BooleanField()
 
     @override
     def __str__(self) -> str:
@@ -110,8 +108,8 @@ class Record(models.Model):
     scheduled_plan: ForeignKey[ScheduledExercise] = models.ForeignKey(
         to=ScheduledExercise, on_delete=models.PROTECT
     )
-    text: TextField[str] = models.TextField()
-    missed: BooleanField[bool] = models.BooleanField()
+    text: TextField = models.TextField()
+    missed: BooleanField = models.BooleanField()
 
     @override
     def __str__(self) -> str:
@@ -139,13 +137,9 @@ class UserAccount(models.Model):
     account_binding: OneToOneField[User] = models.OneToOneField(
         User, on_delete=models.CASCADE
     )
-    saved_plans: ManyToManyField[User, ExercisePlan] = models.ManyToManyField(
-        ExercisePlan
-    )
-    scheduled_plans: ManyToManyField[User, ScheduledExercise] = models.ManyToManyField(
-        ScheduledExercise
-    )
-    records: ManyToManyField[User, Record] = models.ManyToManyField(Record)
+    saved_plans: ManyToManyField = models.ManyToManyField(ExercisePlan)
+    scheduled_plans: ManyToManyField = models.ManyToManyField(ScheduledExercise)
+    records: ManyToManyField = models.ManyToManyField(Record)
 
     @override
     def __str__(self) -> str:
