@@ -63,6 +63,7 @@ class ExercisePlan(models.Model):
     """
 
     name: TextField = models.TextField()
+    dateCreated: DateTimeField = models.DateTimeField()
     ordered_exercises: ManyToManyField = models.ManyToManyField(to=OrderedExercises)
 
 
