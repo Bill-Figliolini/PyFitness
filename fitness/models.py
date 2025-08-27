@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import unique
 from typing import override
 from django.db import models
 from django.db.models.fields import (
@@ -8,11 +9,16 @@ from django.db.models.fields import (
     IntegerField,
     TextField,
 )
+from django.db.models.fields import related
 from django.db.models.fields.related import ForeignKey, ManyToManyField, OneToOneField
 from django.utils import timezone
 from django.contrib.auth.models import User
 
-# Create your models here.
+from accounts.models import UserAccount
+
+import django_stubs_ext
+
+django_stubs_ext.monkeypatch()
 
 
 class Exercise(models.Model):
@@ -34,27 +40,15 @@ class Exercise(models.Model):
         AEROBIC = 6
         FLEXIBILITY = 7
 
-    name: CharField = models.CharField(max_length=100)
-    category: IntegerField = models.IntegerField(choices=ExerciseCategory)
+    name: CharField[str] = models.CharField(max_length=100)
+    category: IntegerField[int] = models.IntegerField(choices=ExerciseCategory)
 
     @override
     def __str__(self) -> str:
         return self.name
 
 
-class OrderedExercises(models.Model):
-    """
-    Class of enumerated exercises that ExercisePlan is built upon
-    """
-
-    exercise: ForeignKey[Exercise] = models.ForeignKey(
-        to=Exercise, on_delete=models.PROTECT
-    )
-    order: models.PositiveIntegerField = models.PositiveIntegerField()
-
-
-# TODO: Current implementation of Record implies that there should be immutable. Needs more thought.
-class ExercisePlan(models.Model):
+class ExercisePlanHolder(models.Model):
     """
     Class that represents the list of exercises that the user wants to perform.
 
@@ -62,9 +56,32 @@ class ExercisePlan(models.Model):
         exercises: Many-to-Many relation over Exercise
     """
 
-    name: TextField = models.TextField()
-    dateCreated: DateTimeField = models.DateTimeField()
-    ordered_exercises: ManyToManyField = models.ManyToManyField(to=OrderedExercises)
+    name: TextField[str] = models.TextField()
+    owner: ForeignKey[UserAccount] = models.ForeignKey(
+        to=UserAccount, on_delete=models.CASCADE
+    )
+    dateCreated: DateTimeField[datetime] = models.DateTimeField()
+    ordered_exercises: ManyToManyField[Exercise] = models.ManyToManyField(
+        to=Exercise, through="ExercisePlan", related_name="holder"
+    )
+
+
+class ExercisePlan(models.Model):
+    """
+    Class of enumerated exercises that ExercisePlanHolder is built upon
+    """
+
+    holder: ForeignKey[ExercisePlanHolder] = models.ForeignKey(
+        to=ExercisePlanHolder, on_delete=models.CASCADE
+    )
+    exercise: ForeignKey[Exercise] = models.ForeignKey(
+        to=Exercise, on_delete=models.PROTECT
+    )
+    order: models.PositiveIntegerField[int] = models.PositiveIntegerField()
+
+    class Meta:
+        unique_together: tuple[str, str] = ("holder", "order")
+        ordering: list[str] = ["order"]
 
 
 class ScheduledExercise(models.Model):
@@ -77,11 +94,15 @@ class ScheduledExercise(models.Model):
         completed: has been marked completed
     """
 
-    scheduledtime: DateTimeField = models.DateTimeField()
-    plan: ForeignKey[ExercisePlan] = models.ForeignKey(
-        to=ExercisePlan, on_delete=models.PROTECT
+    scheduledtime: DateTimeField[datetime] = models.DateTimeField()
+    owner: ForeignKey[UserAccount] = models.ForeignKey(
+        to=UserAccount, on_delete=models.CASCADE
     )
-    completed: BooleanField = models.BooleanField()
+    plan: ForeignKey[ExercisePlanHolder] = models.ForeignKey(
+        to=ExercisePlanHolder, on_delete=models.PROTECT
+    )
+
+    completed: BooleanField[bool] = models.BooleanField()
 
     @override
     def __str__(self) -> str:
@@ -109,39 +130,12 @@ class Record(models.Model):
     scheduled_plan: ForeignKey[ScheduledExercise] = models.ForeignKey(
         to=ScheduledExercise, on_delete=models.PROTECT
     )
-    text: TextField = models.TextField()
-    missed: BooleanField = models.BooleanField()
+    owner: ForeignKey[UserAccount] = models.ForeignKey(
+        to=UserAccount, on_delete=models.CASCADE
+    )
+    text: TextField[str] = models.TextField()
+    missed: BooleanField[bool] = models.BooleanField()
 
     @override
     def __str__(self) -> str:
         return f"Record for {self.scheduled_plan} with text {self.text} that was missed={self.missed}"
-
-
-class UserAccount(models.Model):
-    """
-    Class for handling the Database potion of userdata.
-
-    Attributes:
-        saved_plans: exercise plans stored by the user
-        scheduled_plans: Planned exercises, that will expire at the time they are scheduled
-        record: Records of the user's past exercises
-    Methods:
-        make_plan(): Takes in a list of Exercise entries and assembles an ExercisePlan in saved_plans
-        remove_plan(): removes entry from saved_plans, if it exists
-        schedule_plan(): takes a datetime and a ExercisePlan and creates a ScheduledExercise
-        unschedule_plan(): removes entry from scheduled_plans, if it exists
-        edit_record_text(): Edits the text field on a record entry
-        edit_record_missed(): Inverts the status of the missed field on a record entry
-        update_scheudules(): sends expired scheduled plans to records
-    """
-
-    account_binding: OneToOneField[User] = models.OneToOneField(
-        User, on_delete=models.CASCADE
-    )
-    saved_plans: ManyToManyField = models.ManyToManyField(ExercisePlan)
-    scheduled_plans: ManyToManyField = models.ManyToManyField(ScheduledExercise)
-    records: ManyToManyField = models.ManyToManyField(Record)
-
-    @override
-    def __str__(self) -> str:
-        return f"User {self.account_binding}"
