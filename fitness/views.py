@@ -1,23 +1,27 @@
-from django.http import HttpResponse
 from django.shortcuts import render
 
 
 # Create your views here.
 def index(request):
-    return HttpResponse("Hello World, Welcome to fitness Tracker")
+    context = {}
+    return render(request, "fitness/index.html", context)
 
 
-def login(request) -> HttpResponse:
-    return HttpResponse("TODO - Login")
+def login(request):
+    context = {}
+    return render(request, "fitness/login.html", context)
 
 
-def userDashboard(request) -> HttpResponse:
-    return HttpResponse("TODO - Dashboard")
+def userDashboard(request):
+    context = {}
+    return render(request, "fitness/userDashboard.html", context)
 
 
-def planner(request) -> HttpResponse:
-    return HttpResponse("TODO - Planner")
+def planner(request):
+    context = {}
+    return render(request, "fitness/planner.html", context)
 
 
-def recordPage(request) -> HttpResponse:
-    return HttpResponse("TODO - Records")
+def recordPage(request):
+    context = {}
+    return render(request, "fitness/record.html", context)
