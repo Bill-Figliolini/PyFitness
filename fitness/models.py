@@ -1,5 +1,4 @@
 from datetime import datetime
-from enum import unique
 from typing import override
 from django.db import models
 from django.db.models.fields import (
@@ -9,10 +8,8 @@ from django.db.models.fields import (
     IntegerField,
     TextField,
 )
-from django.db.models.fields import related
-from django.db.models.fields.related import ForeignKey, ManyToManyField, OneToOneField
+from django.db.models.fields.related import ForeignKey, ManyToManyField
 from django.utils import timezone
-from django.contrib.auth.models import User
 
 from accounts.models import UserAccount
 
