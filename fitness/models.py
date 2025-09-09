@@ -18,6 +18,14 @@ import django_stubs_ext
 django_stubs_ext.monkeypatch()
 
 
+class ExerciseCategory(models.Model):
+    name: CharField[str] = CharField(max_length=100)
+
+    @override
+    def __str__(self) -> str:
+        return self.name
+
+
 class Exercise(models.Model):
     """
     Class which represents the data model of the basic Exercises users will select from.
@@ -27,22 +35,14 @@ class Exercise(models.Model):
         category (IntegerField): Represents the category of the exercise, as defined in ExerciseCategory
     """
 
-    class ExerciseCategory(models.IntegerChoices):
-        STRENGTH_CHEST = 0
-        STRENGTH_BACK = 1
-        STRENGTH_ARMS = 2
-        STRENGTH_ABDOMINALS = 3
-        STRENGTH_LEGS = 4
-        STRENGTH_SHOULDERS = 5
-        AEROBIC = 6
-        FLEXIBILITY = 7
-
     name: CharField[str] = models.CharField(max_length=100)
-    category: IntegerField[int] = models.IntegerField(choices=ExerciseCategory)
+    category: ForeignKey[ExerciseCategory] = models.ForeignKey(
+        to=ExerciseCategory, on_delete=models.PROTECT
+    )
 
     @override
     def __str__(self) -> str:
-        return self.name
+        return "self.name -> self.category"
 
 
 class ExercisePlanHolder(models.Model):
