@@ -62,6 +62,10 @@ class ExercisePlanHolder(models.Model):
         to=Exercise, through="ExercisePlan", related_name="holder"
     )
 
+    @override
+    def __str__(self) -> str:
+        return f"{self.name}- Owner: {self.owner.name}, created: {self.dateCreated}"
+
 
 class ExercisePlan(models.Model):
     """
@@ -79,6 +83,10 @@ class ExercisePlan(models.Model):
     class Meta:
         unique_together: tuple[str, str] = ("holder", "order")
         ordering: list[str] = ["order"]
+
+    @override
+    def __str__(self) -> str:
+        return f"{self.holder.name}, {self.exercise.name}, {self.order}"
 
 
 class ScheduledExercise(models.Model):
@@ -103,7 +111,9 @@ class ScheduledExercise(models.Model):
 
     @override
     def __str__(self) -> str:
-        return f"Exercise {self.plan} at {self.scheduledtime}"
+        return (
+            f"Exercise {self.plan.name} for {self.owner.name} at {self.scheduledtime}"
+        )
 
     def has_expired(self) -> bool:
         return self.scheduledtime < timezone.now()
@@ -135,4 +145,6 @@ class Record(models.Model):
 
     @override
     def __str__(self) -> str:
-        return f"Record for {self.scheduled_plan} with text {self.text} that was missed={self.missed}"
+        return (
+            f"Record {self.scheduled_plan}  with text {self.text}. Missed={self.missed}"
+        )

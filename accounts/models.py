@@ -1,6 +1,7 @@
 from typing import override
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models.fields import TextField
 from django.db.models.fields.related import OneToOneField
 
 
@@ -16,6 +17,7 @@ class UserAccount(models.Model):
     account_binding: OneToOneField[User] = models.OneToOneField(
         User, on_delete=models.CASCADE
     )
+    name: TextField[str] = TextField()
 
     @override
     def __str__(self) -> str:
