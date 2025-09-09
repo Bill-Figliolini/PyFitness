@@ -5,7 +5,6 @@ from django.db.models.fields import (
     BooleanField,
     CharField,
     DateTimeField,
-    IntegerField,
     TextField,
 )
 from django.db.models.fields.related import ForeignKey, ManyToManyField
