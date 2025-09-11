@@ -5,6 +5,7 @@ from django.db.models.fields import (
     BooleanField,
     CharField,
     DateTimeField,
+    IntegerField,
     TextField,
 )
 from django.db.models.fields.related import ForeignKey, ManyToManyField
@@ -52,12 +53,13 @@ class ExercisePlanHolder(models.Model):
         exercises: Many-to-Many relation over Exercise
     """
 
+    id: IntegerField[int] = models.IntegerField(primary_key=True)
     name: TextField[str] = models.TextField()
     owner: ForeignKey[UserAccount] = models.ForeignKey(
         to=UserAccount, on_delete=models.CASCADE
     )
     dateCreated: DateTimeField[datetime] = models.DateTimeField()
-    ordered_exercises: ManyToManyField[Exercise] = models.ManyToManyField(
+    ordered_exercises: ManyToManyField[ExercisePlan, Exercise] = models.ManyToManyField(
         to=Exercise, through="ExercisePlan", related_name="holder"
     )
 
@@ -98,6 +100,7 @@ class ScheduledExercise(models.Model):
         completed: has been marked completed
     """
 
+    id: IntegerField[int] = models.IntegerField(primary_key=True)
     scheduledtime: DateTimeField[datetime] = models.DateTimeField()
     owner: ForeignKey[UserAccount] = models.ForeignKey(
         to=UserAccount, on_delete=models.CASCADE
@@ -133,6 +136,7 @@ class Record(models.Model):
         edit_text(): replaces text with input
     """
 
+    id: IntegerField[int] = models.IntegerField(primary_key=True)
     scheduled_plan: ForeignKey[ScheduledExercise] = models.ForeignKey(
         to=ScheduledExercise, on_delete=models.PROTECT
     )

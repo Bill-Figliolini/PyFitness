@@ -1,7 +1,7 @@
 from typing import override
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models.fields import TextField
+from django.db.models.fields import IntegerField, TextField
 from django.db.models.fields.related import OneToOneField
 
 
@@ -14,6 +14,7 @@ class UserAccount(models.Model):
     Methods:
     """
 
+    id: IntegerField[int] = models.IntegerField(primary_key=True)
     account_binding: OneToOneField[User] = models.OneToOneField(
         User, on_delete=models.CASCADE
     )
