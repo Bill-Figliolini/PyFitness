@@ -1,5 +1,6 @@
 from datetime import datetime
-from typing import override
+from typing import Any, override
+from django.conf import settings
 from django.db import models
 from django.db.models.fields import (
     BooleanField,
@@ -55,7 +56,9 @@ class ExercisePlanHolder(models.Model):
 
     id: IntegerField[int] = models.IntegerField(primary_key=True)
     name: TextField[str] = models.TextField()
-    owner: ForeignKey[User] = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    owner: ForeignKey[Any] = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE
+    )
     dateCreated: DateTimeField[datetime] = models.DateTimeField()
     ordered_exercises: ManyToManyField[ExercisePlan, Exercise] = models.ManyToManyField(
         to=Exercise, through="ExercisePlan", related_name="holder"
@@ -100,7 +103,9 @@ class ScheduledExercise(models.Model):
 
     id: IntegerField[int] = models.IntegerField(primary_key=True)
     scheduledtime: DateTimeField[datetime] = models.DateTimeField()
-    owner: ForeignKey[User] = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    owner: ForeignKey[ANY] = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE
+    )
     plan: ForeignKey[ExercisePlanHolder] = models.ForeignKey(
         to=ExercisePlanHolder, on_delete=models.PROTECT
     )
@@ -136,7 +141,9 @@ class Record(models.Model):
     scheduled_plan: ForeignKey[ScheduledExercise] = models.ForeignKey(
         to=ScheduledExercise, on_delete=models.PROTECT
     )
-    owner: ForeignKey[User] = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    owner: ForeignKey[Any] = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE
+    )
     text: TextField[str] = models.TextField()
     missed: BooleanField[bool] = models.BooleanField()
 
