@@ -2,7 +2,6 @@ from typing import override
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models.fields import IntegerField, TextField
-from django.db.models.fields.related import OneToOneField
 
 
 # Create your models here.
