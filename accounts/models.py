@@ -1,11 +1,12 @@
 from typing import override
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 from django.db.models.fields import IntegerField, TextField
 from django.db.models.fields.related import OneToOneField
 
 
 # Create your models here.
-class User(models.Model):
+class User(AbstractUser):
     """
     Class for handling the Database potion of userdata.
 
@@ -18,4 +19,4 @@ class User(models.Model):
 
     @override
     def __str__(self) -> str:
-        return f"User {self.account_binding}"
+        return f"User {self.id}, {self.name}"
