@@ -12,8 +12,6 @@ from django.db.models.fields import (
 from django.db.models.fields.related import ForeignKey, ManyToManyField
 from django.utils import timezone
 
-from accounts.models import User
-
 import django_stubs_ext
 
 django_stubs_ext.monkeypatch()
@@ -60,7 +58,7 @@ class ExercisePlanHolder(models.Model):
         to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE
     )
     dateCreated: DateTimeField[datetime] = models.DateTimeField()
-    ordered_exercises: ManyToManyField[ExercisePlan, Exercise] = models.ManyToManyField(
+    ordered_exercises: ManyToManyField[Any, Exercise] = models.ManyToManyField(
         to=Exercise, through="ExercisePlan", related_name="holder"
     )
 
@@ -103,7 +101,7 @@ class ScheduledExercise(models.Model):
 
     id: IntegerField[int] = models.IntegerField(primary_key=True)
     scheduledtime: DateTimeField[datetime] = models.DateTimeField()
-    owner: ForeignKey[ANY] = models.ForeignKey(
+    owner: ForeignKey[Any] = models.ForeignKey(
         to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE
     )
     plan: ForeignKey[ExercisePlanHolder] = models.ForeignKey(
